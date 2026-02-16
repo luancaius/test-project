@@ -6,6 +6,7 @@ dependencies = [
     "fastapi>=0.129.0",
     "pydantic[email]>=2.12",
     "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
     "structlog>=25.5.0",
     "uvicorn[standard]>=0.32.0",
 ]
@@ -43,3 +44,16 @@ unfixable = ["B"]
 quote-style = "double"
 indent-style = "space"
 docstring-code-format = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["**/__pycache__/*", "**/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+]
+fail_under = 0
