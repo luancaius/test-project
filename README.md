@@ -52,14 +52,7 @@ sequenceDiagram
 | **Presentation** | `src/presentation/api/v1/` | HTTP: FastAPI routers (`router.py`, `users.py`), request/response mapping, status codes (e.g. 404), and request-logging middleware. Depends only on the business layer via DI (`UserService`). |
 | **Business** | `src/business/` | Application logic: `UserService` orchestrates the repository. Domain models and DTOs (`User`, `CreateUserRequest`, `UpdateUserRequest`) live in `business/models/`. No HTTP or storage details. |
 | **Infrastructure** | `src/infra/` | **UserRepository** uses **Cache** (in-memory, TTL) and **Database** (persistent storage). Cache is checked first on reads; on miss, data is loaded from the database and written to the cache. Writes go to the database and refresh the cache. |
-| **Shared** | `src/shared/` | Re-exported models for API, `settings` (env vars), dependency injection (`di`: structlog, cache, database, repository, service wiring, and FastAPI app factory). |
-
-### Runtime wiring (`main.py` and `src/shared/di.py`)
-
-- **Cache:** `InMemoryCache` with configurable TTL (`CACHE_TTL_SECONDS`, default 60). Used by `UserRepository` for GET-by-id (and refreshed on create/update).
-- **Database:** `InMemoryUserDatabase` holds persistent user data; repository reads/writes go through it, with cache in front for reads.
-- **UserRepository** is built with `cache` and `database`; `UserService` is built with the repository. Both are attached via `singletons`; routes use `singletons.user_service`.
-- The FastAPI app is created by `get_fastapi_app()`: request-logging middleware, `GET /` health-style root, and the v1 router (prefix `/v1`).
+| **Shared** | `src/shared/` |  `settings` (env vars), dependency injection (`di`: structlog, cache, database, repository, service wiring, and FastAPI app factory). |
 
 ## Features
 
@@ -68,7 +61,7 @@ sequenceDiagram
 - **Database:** Persistent storage for users; the repository reads from and writes to the database, with the cache in front for GET-by-id.
 - **Logging:** structlog (request start/finish in middleware; cache hits/misses, user operations, and errors in routes).
 
-**Requirements:** Python 3.14+ (mise defaults to 3.14). Dependencies are managed with [uv](https://docs.astral.sh/uv/).
+**Requirements:** Python 3.14+ (`mise` defaults to 3.14). Dependencies are managed with [uv](https://docs.astral.sh/uv/).
 
 ## Run locally
 
@@ -111,6 +104,12 @@ or:
 pytest tests/ -v
 ```
 
+### Test Coverage
+```bash
+mise run coverage
+```
+
+
 ## Environment variables
 
 | Variable              | Description                                   | Default   |
@@ -139,65 +138,3 @@ pytest tests/ -v
 - **PATCH body (UpdateUserRequest):** any subset of `name`, `email`, `age` (optional, > 0).
 
 ---
-
-## Coverage badge (guide)
-
-The coverage badge at the top of this README shows test coverage for the default branch. It uses [we-cli/coverage-badge-action](https://github.com/marketplace/actions/coverage-badge): no external service or token—the badge is stored on the `gh-pages` branch and served via GitHub Pages.
-
-### 1. Run coverage locally
-
-- **Install deps:** `uv sync` (adds `pytest-cov`).
-- **Run tests with coverage:**
-  ```bash
-  mise run coverage
-  ```
-  or:
-  ```bash
-  pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=html
-  ```
-- **Reports:** Terminal shows line-by-line missing lines; `htmlcov/index.html` is the HTML report (open in a browser).
-
-### 2. Coverage configuration
-
-- **Where:** `pyproject.toml` under `[tool.coverage.run]` and `[tool.coverage.report]`.
-- **What’s measured:** Only the `src/` package. Tests and `__pycache__` are omitted.
-- **Branch coverage:** Enabled (`branch = true`) so uncovered branches are reported.
-- **Excluded lines:** `pragma: no cover`, `def __repr__`, `raise NotImplementedError` (customize in `exclude_lines` if needed).
-
-### 3. CI and coverage badge (gh-pages)
-
-- **Workflow:** `.github/workflows/ci.yml` runs on push/PR to `main`. It:
-  1. Installs Python 3.14 and deps with `uv`
-  2. Runs `ruff check src/`
-  3. Runs `pytest` with coverage and writes `coverage.json` (used by the badge action)
-  4. On the **default branch only**, runs [we-cli/coverage-badge-action](https://github.com/marketplace/actions/coverage-badge) to update the badge on `gh-pages` (patch and push only the badge SVG).
-
-- **One-time setup:**
-  1. **Create `gh-pages` branch** (if you don’t have it):
-     ```bash
-     git switch --orphan gh-pages
-     git commit --allow-empty -m "Initial commit"
-     git push -u origin gh-pages
-     git switch main
-     ```
-  2. **Enable GitHub Pages:** Repo **Settings → Pages → Build and deployment**: Source = **Deploy from a branch**; Branch = **gh-pages**, folder **/ (root)**.
-  3. **Workflow permissions:** **Settings → Actions → General → Workflow permissions** → choose **Read and write permissions** (so the action can push the badge to `gh-pages`).
-
-- **Badge URL:** The badge image is `https://luancaius.github.io/test-project/badges/coverage.svg` and the link points to [Actions](https://github.com/luancaius/test-project/actions).
-
-### 4. Optional: fail CI if coverage drops
-
-In `pyproject.toml`, set a minimum coverage so CI fails when coverage is too low:
-
-```toml
-[tool.coverage.report]
-fail_under = 80   # e.g. require 80% line coverage
-```
-
-Then run coverage locally with:
-
-```bash
-pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80
-```
-
-and in `.github/workflows/ci.yml` add `--cov-fail-under=80` to the pytest step (or use `coverage report --fail-under=80` on the existing `.coverage` data) so CI enforces the same threshold.
