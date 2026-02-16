@@ -1,5 +1,3 @@
-"""Unit tests for UserRepository: cache hit, cache miss, and expired cache."""
-
 import time
 from unittest.mock import MagicMock
 
@@ -28,7 +26,6 @@ def test_get_by_id_cache_hit_does_not_call_database(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """When user is in cache, repository returns it and does not call the database."""
     cache = InMemoryCache(ttl_seconds=60)
     cache.set("users:1", sample_user)
     repo = UserRepository(cache=cache, database=mock_database)
@@ -43,7 +40,6 @@ def test_get_by_id_cache_miss_calls_database_and_populates_cache(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """When user is not in cache, repository fetches from database and stores in cache."""
     mock_database.get.return_value = sample_user
     cache = InMemoryCache(ttl_seconds=60)
     repo = UserRepository(cache=cache, database=mock_database)
@@ -58,7 +54,6 @@ def test_get_by_id_cache_miss_calls_database_and_populates_cache(
 def test_get_by_id_cache_miss_user_not_in_database_returns_none(
     mock_database: MagicMock,
 ) -> None:
-    """When user is not in cache and not in database, returns None and does not set cache."""
     mock_database.get.return_value = None
     cache = InMemoryCache(ttl_seconds=60)
     repo = UserRepository(cache=cache, database=mock_database)
@@ -74,7 +69,6 @@ def test_get_by_id_expired_cache_hits_database_and_repopulates_cache(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """When cache entry has expired, get_by_id hits database and stores fresh value in cache."""
     mock_database.get.return_value = sample_user
     cache = InMemoryCache(ttl_seconds=1)
     cache.set("users:1", sample_user)
@@ -92,7 +86,6 @@ def test_create_user_stores_in_cache(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """After creating a user, repository stores it in cache."""
     mock_database.create.return_value = sample_user
     cache = InMemoryCache(ttl_seconds=60)
     repo = UserRepository(cache=cache, database=mock_database)
@@ -108,7 +101,6 @@ def test_update_user_stores_updated_user_in_cache(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """After updating a user, repository stores updated user in cache."""
     updated = User(id=1, name="Alice Updated", email="alice@example.com", age=31)
     mock_database.update.return_value = updated
     cache = InMemoryCache(ttl_seconds=60)
@@ -125,7 +117,6 @@ def test_get_all_returns_users_from_database(
     sample_user: User,
     mock_database: MagicMock,
 ) -> None:
-    """get_all reads from database (cache for list is currently commented out in repo)."""
     mock_database.get.return_value = [sample_user]
     cache = InMemoryCache(ttl_seconds=60)
     repo = UserRepository(cache=cache, database=mock_database)

@@ -1,5 +1,3 @@
-"""Shared pytest fixtures for unit tests."""
-
 import pytest
 
 from src.business.models.user import CreateUserRequest, User
@@ -31,13 +29,11 @@ def in_memory_database() -> InMemoryUserDatabase:
 
 @pytest.fixture
 def cache_with_ttl_60() -> InMemoryCache:
-    """Cache with 60s TTL for normal (non-expiry) tests."""
     return InMemoryCache(ttl_seconds=60)
 
 
 @pytest.fixture
 def cache_ttl_1_second() -> InMemoryCache:
-    """Cache with 1s TTL for expired-cache tests."""
     return InMemoryCache(ttl_seconds=1)
 
 

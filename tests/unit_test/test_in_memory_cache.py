@@ -1,5 +1,3 @@
-"""Unit tests for InMemoryCache: get, set, and expired TTL behavior."""
-
 import time
 
 import pytest
@@ -34,7 +32,6 @@ def test_different_keys_are_independent() -> None:
 
 
 def test_expired_entry_returns_none() -> None:
-    """After TTL has passed, get returns None for the key."""
     cache = InMemoryCache(ttl_seconds=1)
     cache.set("expiring", "value")
     assert cache.get("expiring") == "value"
@@ -43,7 +40,6 @@ def test_expired_entry_returns_none() -> None:
 
 
 def test_expired_entry_is_removed_from_store() -> None:
-    """After TTL, get not only returns None but removes the entry (next get still None)."""
     cache = InMemoryCache(ttl_seconds=1)
     cache.set("expiring", "value")
     time.sleep(1.1)
@@ -53,7 +49,6 @@ def test_expired_entry_is_removed_from_store() -> None:
 
 
 def test_non_expired_entry_unchanged_after_other_expires() -> None:
-    """One key expiring does not affect another key that has not expired."""
     cache = InMemoryCache(ttl_seconds=1)
     cache.set("short", "short_value")
     time.sleep(0.6)
@@ -64,7 +59,6 @@ def test_non_expired_entry_unchanged_after_other_expires() -> None:
 
 
 def test_zero_ttl_expires_immediately() -> None:
-    """With ttl_seconds=0, entry is considered expired on the next get (or very soon)."""
     cache = InMemoryCache(ttl_seconds=0)
     cache.set("zero", "v")
     time.sleep(0.1)
