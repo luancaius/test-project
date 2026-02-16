@@ -1,18 +1,19 @@
 # User Service
 
-A FastAPI microservice that exposes user profile data with an in-memory repository (TTL-based expiry), structlog logging, and dependency injection.
+A FastAPI microservice that exposes user profile data.
 
 ## Architecture
 
-The service follows a **layered architecture** with clear separation between HTTP handling, business logic, and infrastructure. Dependency injection is used so the same API runs with an in-memory repository.
+The service follows a **layered architecture** with clear separation between HTTP handling, business logic, and infrastructure. 
+It uses a cross-cutting layer called `Shared` for Logging, Structure Logging and Settings.
 
 ### High-level layers
-
-
-### Request flow (e.g. GET /v1/users/{id})
 ![general_architecture.png](assets/general_architecture.png)
 
 ![infra_layer.png](assets/infra_layer.png)
+
+### Request flow (e.g. GET /v1/users/{id})
+
 ```mermaid
 sequenceDiagram
     participant C as Client
@@ -96,11 +97,24 @@ sequenceDiagram
 mise run lint
 ```
 
+## Test
+
+```bash
+mise run test
+```
+
+or:
+
+```bash
+pytest tests/ -v
+```
+
 ## Environment variables
 
 | Variable              | Description                                   | Default   |
 |-----------------------|-----------------------------------------------|-----------|
 | `CACHE_TTL_SECONDS`   | TTL for in-memory user entries (seconds)      | 60        |
+| `LOG_LEVEL`           | Logging level (e.g. INFO, DEBUG)              | INFO      |
 | `SERVER_HOST`         | Bind host for uvicorn                         | 0.0.0.0   |
 | `SERVER_PORT`         | Bind port                                     | 8000      |
 | `SERVER_RELOAD`       | Enable uvicorn reload                         | true      |
