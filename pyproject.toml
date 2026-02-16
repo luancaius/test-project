@@ -1,0 +1,14 @@
+[project]
+name = "user-service"
+version = "0.0.1"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.129.0",
+    "pydantic[email]>=2.12",
+    "structlog>=25.5.0",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[tool.ruff]
+target-version = "py314"
+preview = true
