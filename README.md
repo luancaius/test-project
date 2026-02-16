@@ -1,6 +1,6 @@
 # User Service
 
-[![cov](https://OWNER.github.io/REPO/badges/coverage.svg)](https://github.com/OWNER/REPO/actions)
+[![cov](https://luancaius.github.io/test-project/badges/coverage.svg)](https://github.com/luancaius/test-project/actions)
 
 A FastAPI microservice that exposes user profile data.
 
@@ -183,7 +183,7 @@ The coverage badge at the top of this README shows test coverage for the default
   2. **Enable GitHub Pages:** Repo **Settings → Pages → Build and deployment**: Source = **Deploy from a branch**; Branch = **gh-pages**, folder **/ (root)**.
   3. **Workflow permissions:** **Settings → Actions → General → Workflow permissions** → choose **Read and write permissions** (so the action can push the badge to `gh-pages`).
 
-- **Badge URL:** Replace `OWNER` and `REPO` in the README with your GitHub org/user and repo name. The badge image is `https://OWNER.github.io/REPO/badges/coverage.svg` and the link points to the Actions tab, e.g. `https://github.com/myorg/user-service/actions`.
+- **Badge URL:** The badge image is `https://luancaius.github.io/test-project/badges/coverage.svg` and the link points to [Actions](https://github.com/luancaius/test-project/actions).
 
 ### 4. Optional: fail CI if coverage drops
 
