@@ -1,6 +1,6 @@
 # User Service
 
-[![codecov](https://codecov.io/gh/OWNER/REPO/graph/badge.svg)](https://codecov.io/gh/OWNER/REPO)
+[![cov](https://OWNER.github.io/REPO/badges/coverage.svg)](https://github.com/OWNER/REPO/actions)
 
 A FastAPI microservice that exposes user profile data.
 
@@ -142,7 +142,7 @@ pytest tests/ -v
 
 ## Coverage badge (guide)
 
-The coverage badge at the top of this README shows test coverage for the default branch. Here is how it’s set up and how to use it.
+The coverage badge at the top of this README shows test coverage for the default branch. It uses [we-cli/coverage-badge-action](https://github.com/marketplace/actions/coverage-badge): no external service or token—the badge is stored on the `gh-pages` branch and served via GitHub Pages.
 
 ### 1. Run coverage locally
 
@@ -164,22 +164,26 @@ The coverage badge at the top of this README shows test coverage for the default
 - **Branch coverage:** Enabled (`branch = true`) so uncovered branches are reported.
 - **Excluded lines:** `pragma: no cover`, `def __repr__`, `raise NotImplementedError` (customize in `exclude_lines` if needed).
 
-### 3. CI and Codecov (for the badge)
+### 3. CI and coverage badge (gh-pages)
 
 - **Workflow:** `.github/workflows/ci.yml` runs on push/PR to `main`. It:
   1. Installs Python 3.14 and deps with `uv`
   2. Runs `ruff check src/`
-  3. Runs `pytest` with coverage and writes `coverage.xml`
-  4. Uploads that file to [Codecov](https://codecov.io) using the `codecov/codecov-action` (v4).
+  3. Runs `pytest` with coverage and writes `coverage.json` (used by the badge action)
+  4. On the **default branch only**, runs [we-cli/coverage-badge-action](https://github.com/marketplace/actions/coverage-badge) to update the badge on `gh-pages` (patch and push only the badge SVG).
 
-- **Codecov setup (one-time):**
-  1. Go to [codecov.io](https://codecov.io) and sign in with GitHub.
-  2. Add this repository. Codecov will show a **token** for the repo.
-  3. In the repo on GitHub: **Settings → Secrets and variables → Actions**.
-  4. New repository secret: name `CODECOV_TOKEN`, value = the token from Codecov.
-  5. Push to `main` (or open a PR) so CI runs. After the first successful upload, the badge will show coverage.
+- **One-time setup:**
+  1. **Create `gh-pages` branch** (if you don’t have it):
+     ```bash
+     git switch --orphan gh-pages
+     git commit --allow-empty -m "Initial commit"
+     git push -u origin gh-pages
+     git switch main
+     ```
+  2. **Enable GitHub Pages:** Repo **Settings → Pages → Build and deployment**: Source = **Deploy from a branch**; Branch = **gh-pages**, folder **/ (root)**.
+  3. **Workflow permissions:** **Settings → Actions → General → Workflow permissions** → choose **Read and write permissions** (so the action can push the badge to `gh-pages`).
 
-- **Badge URL:** Replace `OWNER` and `REPO` in the README badge with your GitHub org/user and repo name, e.g. `https://codecov.io/gh/myorg/user-service/graph/badge.svg`. The link in the README currently uses `OWNER/REPO` as a placeholder.
+- **Badge URL:** Replace `OWNER` and `REPO` in the README with your GitHub org/user and repo name. The badge image is `https://OWNER.github.io/REPO/badges/coverage.svg` and the link points to the Actions tab, e.g. `https://github.com/myorg/user-service/actions`.
 
 ### 4. Optional: fail CI if coverage drops
 

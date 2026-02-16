@@ -1,4 +1,4 @@
-# CI: lint, test, coverage upload for badge
+# CI: lint, test, coverage badge (gh-pages via we-cli/coverage-badge-action)
 name: CI
 
 on:
@@ -6,6 +6,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
+permissions:
+  contents: write
 
 jobs:
   lint-and-test:
@@ -28,12 +31,8 @@ jobs:
         run: uv run ruff check src/
 
       - name: Run tests with coverage
-        run: uv run pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+        run: uv run pytest tests/ -v --cov=src --cov-report=json --cov-report=term-missing
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Update Coverage Badge
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        uses: we-cli/coverage-badge-action@v1.0.1
