@@ -8,51 +8,36 @@ The service follows a **layered architecture** with clear separation between HTT
 
 ### High-level layers
 
-```mermaid
-flowchart TB
-    subgraph Presentation["Presentation layer"]
-        API[FastAPI routes]
-        MW[Request logging middleware]
-    end
-
-    subgraph Business["Business layer"]
-        SVC[UserService]
-    end
-
-    subgraph Infrastructure["Infrastructure layer"]
-        REPO[User repository]
-    end
-
-    subgraph Shared["Shared"]
-        MODELS[Models & DTOs]
-        LOG[Structured logging]
-    end
-
-    Client((Client)) --> API
-    API --> MW
-    MW --> SVC
-    SVC --> REPO
-    API -.-> MODELS
-    SVC -.-> MODELS
-    REPO -.-> MODELS
-    MW -.-> LOG
-    SVC -.-> LOG
-```
 
 ### Request flow (e.g. GET /v1/users/{id})
+![general_architecture.png](assets/general_architecture.png)
 
+![infra_layer.png](assets/infra_layer.png)
 ```mermaid
 sequenceDiagram
     participant C as Client
     participant API as Presentation
     participant SVC as UserService
-    participant Repo as Repository
+    participant Repo as UserRepository
+    participant Cache as Cache
+    participant DB as Database
 
     C->>API: GET /v1/users/1
     API->>SVC: get_by_id(1)
     SVC->>Repo: get_by_id(1)
-    Repo->>Repo: refresh (expire TTL entries)
-    Repo-->>SVC: User or None
+    Repo->>Cache: get(users:1)
+    alt cache hit
+        Cache-->>Repo: User
+        Repo-->>SVC: User
+    else cache miss
+        Cache-->>Repo: None
+        Repo->>DB: get(users, 1)
+        DB-->>Repo: User or None
+        opt user found
+            Repo->>Cache: set(users:1, user)
+        end
+        Repo-->>SVC: User or None
+    end
     SVC-->>API: User or None
     API-->>C: 200 + JSON or 404
 ```
@@ -63,21 +48,22 @@ sequenceDiagram
 |-------|----------|----------------|
 | **Presentation** | `src/presentation/api/v1/` | HTTP: FastAPI routers (`router.py`, `users.py`), request/response mapping, status codes (e.g. 404), and request-logging middleware. Depends only on the business layer via DI (`UserService`). |
 | **Business** | `src/business/` | Application logic: `UserService` orchestrates the repository. Domain models and DTOs (`User`, `CreateUserRequest`, `UpdateUserRequest`) live in `business/models/`. No HTTP or storage details. |
-| **Infrastructure** | `src/infra/repositories/` | Abstract `UserRepository` and concrete `InMemoryUserRepository` with TTL-based expiry and refresh on read/update. |
-| **Shared** | `src/shared/` | Cross-cutting: re-exported models for API, `settings` (env vars), `di` (structlog, repository, service wiring, and FastAPI app factory). |
+| **Infrastructure** | `src/infra/` | **UserRepository** uses **Cache** (in-memory, TTL) and **Database** (persistent storage). Cache is checked first on reads; on miss, data is loaded from the database and written to the cache. Writes go to the database and refresh the cache. |
+| **Shared** | `src/shared/` | Re-exported models for API, `settings` (env vars), dependency injection (`di`: structlog, cache, database, repository, service wiring, and FastAPI app factory). |
 
 ### Runtime wiring (`main.py` and `src/shared/di.py`)
 
-- **In-memory** `InMemoryUserRepository` with configurable TTL (`CACHE_TTL_SECONDS`, default 60). Entries are refreshed (expired ones removed) on every read and on update.
-- `UserService` is built with the repository and attached via `singletons.user_service`; routes use it from `src.shared.di.singletons`.
+- **Cache:** `InMemoryCache` with configurable TTL (`CACHE_TTL_SECONDS`, default 60). Used by `UserRepository` for GET-by-id (and refreshed on create/update).
+- **Database:** `InMemoryUserDatabase` holds persistent user data; repository reads/writes go through it, with cache in front for reads.
+- **UserRepository** is built with `cache` and `database`; `UserService` is built with the repository. Both are attached via `singletons`; routes use `singletons.user_service`.
 - The FastAPI app is created by `get_fastapi_app()`: request-logging middleware, `GET /` health-style root, and the v1 router (prefix `/v1`).
 
 ## Features
 
 - **Endpoints:** `GET /v1/users`, `GET /v1/users/{user_id}`, `POST /v1/users`, `PATCH /v1/users/{user_id}`, and `GET /` (status).
-- **Storage & TTL:** In-memory repository with configurable TTL (default 60s); entries expire and are removed on refresh (on each read and on PATCH).
-- **Persistence:** In-memory only; data does not survive app restarts.
-- **Logging:** structlog (request start/finish in middleware; user operations and errors in routes).
+- **Cache:** In-memory cache with configurable TTL (default 60s). GET-by-id checks the cache first; on miss, data is loaded from the database and stored in the cache. PATCH and POST refresh the cache for the affected user.
+- **Database:** Persistent storage for users; the repository reads from and writes to the database, with the cache in front for GET-by-id.
+- **Logging:** structlog (request start/finish in middleware; cache hits/misses, user operations, and errors in routes).
 
 **Requirements:** Python 3.14+ (mise defaults to 3.14). Dependencies are managed with [uv](https://docs.astral.sh/uv/).
 
