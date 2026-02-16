@@ -1,4 +1,3 @@
-from typing import Optional
 
 from src.business.models.user import CreateUserRequest, UpdateUserRequest, User
 from src.infra.database.database import Database
@@ -11,7 +10,7 @@ class InMemoryUserDatabase(Database):
         self._users: dict[int, User] = {}
         self._next_id = 1
 
-    def get(self, key: str, user_id: Optional[int] = None) -> list[User] | Optional[User]:
+    def get(self, key: str, user_id: int | None = None) -> list[User] | User | None:
         if user_id is not None:
             return self._users.get(user_id)
         return list(self._users.values())
@@ -27,7 +26,7 @@ class InMemoryUserDatabase(Database):
         self._users[user.id] = user
         return user
 
-    def update(self, key: str, user_id: int, data: UpdateUserRequest) -> Optional[User]:
+    def update(self, key: str, user_id: int, data: UpdateUserRequest) -> User | None:
         user = self._users.get(user_id)
         if user is None:
             return None

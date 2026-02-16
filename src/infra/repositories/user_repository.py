@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import cast
 
 from src.business.models.user import CreateUserRequest, UpdateUserRequest, User
 from src.infra.cache.cache import Cache
@@ -20,10 +20,10 @@ class UserRepository:
         #     return cast(list[User], cached)
         # logger.info("users_listed_from_database")
         users = self._database.get(KEY_USERS)
-        #self._cache.set(KEY_USERS, users)
+        # self._cache.set(KEY_USERS, users)
         return users
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, user_id: int) -> User | None:
         cached = self._cache.get(f"{KEY_USERS}:{user_id}")
         if cached is not None:
             logger.info("user_found_in_cache", user_id=user_id)
@@ -42,7 +42,7 @@ class UserRepository:
         logger.info("user_created", user_id=user.id)
         return user
 
-    def update(self, user_id: int, data: UpdateUserRequest) -> Optional[User]:
+    def update(self, user_id: int, data: UpdateUserRequest) -> User | None:
         user = self._database.update(KEY_USERS, user_id, data)
         if user is not None:
             self._cache.set(f"{KEY_USERS}:{user_id}", user)

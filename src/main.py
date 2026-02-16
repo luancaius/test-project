@@ -1,7 +1,8 @@
 import uvicorn
-from src.shared.settings import settings
+
 from src.shared.app import get_fastapi_app
 from src.shared.di import init_dependencies
+from src.shared.settings import settings
 
 init_dependencies()
 app = get_fastapi_app()

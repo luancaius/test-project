@@ -1,6 +1,5 @@
-from starlette.requests import Request
-
 from fastapi import FastAPI
+from starlette.requests import Request
 
 from src.presentation.api.v1.router import router as v1_router
 from src.shared.logger import logger

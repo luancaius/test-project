@@ -1,5 +1,4 @@
 import time
-from typing import Optional
 
 from src.business.models.user import User
 from src.infra.cache.user_cache import UserCache
@@ -13,7 +12,7 @@ class InMemoryUserCache(UserCache):
     def __init__(self, ttl_seconds: int = 60) -> None:
         self._ttl_seconds = ttl_seconds
         self._by_id: dict[int, tuple[User, float]] = {}
-        self._all: Optional[tuple[list[User], float]] = None
+        self._all: tuple[list[User], float] | None = None
 
     def _now(self) -> float:
         return time.time()
@@ -21,7 +20,7 @@ class InMemoryUserCache(UserCache):
     def _expired(self, at: float) -> bool:
         return self._now() > at + self._ttl_seconds
 
-    def get_user(self, user_id: int) -> Optional[User]:
+    def get_user(self, user_id: int) -> User | None:
         entry = self._by_id.get(user_id)
         if entry is None:
             return None
@@ -34,7 +33,7 @@ class InMemoryUserCache(UserCache):
     def set_user(self, user_id: int, user: User) -> None:
         self._by_id[user_id] = (user, self._now())
 
-    def get_all_users(self) -> Optional[list[User]]:
+    def get_all_users(self) -> list[User] | None:
         if self._all is None:
             return None
         users, at = self._all

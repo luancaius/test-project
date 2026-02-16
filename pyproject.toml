@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.129.0",
     "pydantic[email]>=2.12",
+    "pytest>=8.0.0",
     "structlog>=25.5.0",
     "uvicorn[standard]>=0.32.0",
 ]
@@ -12,3 +13,33 @@ dependencies = [
 [tool.ruff]
 target-version = "py314"
 preview = true
+line-length = 88
+exclude = [".git", ".venv", "__pycache__", "build", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle - style (indentation, whitespace, etc.)
+    "F",     # Pyflakes - unused imports, undefined names, etc.
+    "B",     # flake8-bugbear - likely bugs and design problems
+    "I",     # isort - import sorting
+    "UP",    # pyupgrade - modern Python syntax (e.g. Union[X, Y] -> X | Y)
+    "SIM",   # flake8-simplify - simplify expressions
+    "C4",    # flake8-comprehensions - clearer comprehensions
+    "T20",   # flake8-print - no print(); use logging
+]
+ignore = [
+    "E501",   # line too long (let the formatter handle wrapping)
+    "B008",   # do not perform function calls in argument defaults
+    "B904",   # raise without from inside except (sometimes intentional)
+]
+fixable = ["ALL"]
+unfixable = ["B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["T20"]   # allow print() in tests
+"**/__init__.py" = ["F401"]         # allow unused re-exports in __init__.py
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from src.business.services.user_service import UserService
 from src.infra.cache.in_memory_cache import InMemoryCache
@@ -8,8 +7,8 @@ from src.shared.settings import settings
 
 
 class Singletons:
-    repository: Optional[UserRepository] = None
-    user_service: Optional[UserService] = None
+    repository: UserRepository | None = None
+    user_service: UserService | None = None
 
 
 singletons = Singletons()

@@ -10,6 +10,7 @@ from src.shared.logger import logger
 
 router = APIRouter()
 
+
 @router.get("/users", response_model=list[User])
 def get_users() -> list[User]:
     user_service = singletons.user_service

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.business.models.user import User
 
@@ -8,7 +7,7 @@ class UserCache(ABC):
     """Cache for User entities. GETs hit this before the repository."""
 
     @abstractmethod
-    def get_user(self, user_id: int) -> Optional[User]:
+    def get_user(self, user_id: int) -> User | None:
         pass
 
     @abstractmethod
@@ -16,7 +15,7 @@ class UserCache(ABC):
         pass
 
     @abstractmethod
-    def get_all_users(self) -> Optional[list[User]]:
+    def get_all_users(self) -> list[User] | None:
         """Returns None on cache miss."""
         pass
 
