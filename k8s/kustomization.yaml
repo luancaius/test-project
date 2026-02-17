@@ -1,0 +1,9 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+
+images:
+  - name: user-service
+    newName: user-service
+    newTag: v1.0

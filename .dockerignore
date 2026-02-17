@@ -1,0 +1,39 @@
+# Virtual env (platform-specific, rebuilt in image)
+.venv/
+venv/
+env/
+
+# Git and IDE
+.git/
+.gitignore
+.cursor/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests and coverage (not needed in runtime image)
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Build and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.mise/
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Docs and assets (optional: remove if API docs are needed at runtime)
+# assets/
+# README.md
+
+# CI and local config
+.github/
+mise.toml
