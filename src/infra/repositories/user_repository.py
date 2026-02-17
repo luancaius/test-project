@@ -4,6 +4,7 @@ from src.business.models.user import CreateUserRequest, UpdateUserRequest, User
 from src.infra.cache.cache import Cache
 from src.infra.database.database import Database
 from src.shared.logger import logger
+from src.shared.settings import settings
 
 KEY_USERS = "users"
 
@@ -39,14 +40,14 @@ class UserRepository:
     def create(self, data: CreateUserRequest) -> User:
         user = self._database.create(KEY_USERS, data)
         self._cache.set(f"{KEY_USERS}:{user.id}", user)
-        logger.info("user_created", user_id=user.id)
+        logger.info("user_created", user_id=user.id, cache_ttl=settings.cache_ttl_seconds)
         return user
 
     def update(self, user_id: int, data: UpdateUserRequest) -> User | None:
         user = self._database.update(KEY_USERS, user_id, data)
         if user is not None:
             self._cache.set(f"{KEY_USERS}:{user_id}", user)
-            logger.info("user_updated", user_id=user_id)
+            logger.info("user_updated", user_id=user_id, cache_ttl=settings.cache_ttl_seconds)
             return user
         logger.info("user_not_found_in_database", user_id=user_id)
         return None

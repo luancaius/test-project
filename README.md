@@ -218,7 +218,6 @@ Configuration (e.g. `LOG_LEVEL`, `CACHE_TTL_SECONDS`, `APP_TITLE`) is stored in 
 
    ```bash
    kubectl apply -k k8s/
-   kubectl rollout restart deployment/user-service
    ```
 
 **Inspect current config:**
